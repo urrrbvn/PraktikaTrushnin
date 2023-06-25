@@ -1,0 +1,211 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Client</title>
+</head>
+<body>
+  <h1>Многопоточная загрузка с клиент-серверного взаимодействия</h1>
+  <input id="keyword" type="text" placeholder="Введите ключевое слово">
+  <button id="submit">Запустить загрузку</button>
+  <div id="status"></div>
+  <script>
+    const statusElement = document.getElementById('status');
+    const keywordInput = document.getElementById('keyword');
+    const submitButton = document.getElementById('submit');
+
+    //Замените адрес подключения на свой сервер
+    const connection = new WebSocket('ws://localhost:3000');
+
+    connection.onopen = () => {
+      statusElement.textContent = 'Соединение установлено';
+    };
+
+    connection.onmessage = async (message) => {
+      const data = JSON.parse(message.data);
+      
+      if (data.error) {
+        statusElement.textContent = `Ошибка: ${data.error}`;
+        return;
+      }
+
+      if (data.urls) {
+        // Очистка статусного элемента
+        statusElement.textContent = "";
+
+        // Создание кликабельных ссылок
+        data.urls.forEach(url => {
+          const link = document.createElement('a');
+          link.href = url;
+          link.target = '_blank';
+          link.textContent = url;
+          
+          statusElement.appendChild(link);
+          statusElement.appendChild(document.createElement('br'));
+        });
+
+        // Загрузка и сохранение HTML содержимого страниц
+        for (const url of data.urls) {
+          try {
+            const response = await fetch(url);
+            const htmlContent = await response.text();
+            localStorage.setItem(`html_${url}`, htmlContent);
+          } catch (error) {
+            console.error(`Ошибка при загрузке или сохранении HTML-содержимого для ${url}: `, error);
+          }
+        }
+      }
+    };
+
+    connection.onclose = () => {
+      statusElement.textContent = 'Соединение закрыто';
+    };
+
+    submitButton.addEventListener('click', () => {
+      const keyword = keywordInput.value;
+      if (!keyword) {
+        alert('Пожалуйста, введите ключевое слово');
+        return;
+      }
+
+      // Отправляем только ключевое слово, без объекта JSON
+      connection.send(keyword);
+    });
+  </script>
+</body>
+</html> -->
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Client</title>
+</head>
+<body>
+  <h1>Многопоточная загрузка с клиент-серверного взаимодействия</h1>
+  <input id="keyword" type="text" placeholder="Введите ключевое слово">
+  <button id="submit">Запустить загрузку</button>
+  <div id="status"></div>
+  <script>
+    const statusElement = document.getElementById('status');
+    const keywordInput = document.getElementById('keyword');
+    const submitButton = document.getElementById('submit');
+
+    // Замените адрес подключения на свой сервер
+    const connection = new WebSocket('ws://localhost:3000');
+
+    connection.onopen = () => {
+      statusElement.textContent = 'Соединение установлено';
+    };
+
+    connection.onmessage = async (message) => {
+      const data = JSON.parse(message.data);
+
+      if (data.error) {
+        statusElement.textContent = `Ошибка: ${data.error}`;
+        return;
+      }
+
+      if (data.urls) {
+        // Очистка статусного элемента
+        statusElement.textContent = "";
+
+        // Создание кликабельных ссылок
+        data.urls.forEach((url) => {
+          const link = document.createElement('a');
+          link.href = url;
+          link.target = '_blank';
+          link.textContent = url;
+
+          statusElement.appendChild(link);
+          statusElement.appendChild(document.createElement('br'));
+        });
+      }
+
+      // Получение содержимого HTML и сохранение его
+      if (data.status === 'downloaded' && data.url && data.htmlContent) {
+        localStorage.setItem(`html_${data.url}`, data.htmlContent);
+      }
+    };
+
+    submitButton.onclick = () => {
+      const keyword = keywordInput.value;
+      if (keyword) {
+        connection.send(keyword);
+      }
+    };
+  </script>
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Client</title>
+</head>
+<body>
+  <h1>Многопоточная загрузка с клиент-серверного взаимодействия</h1>
+  <input id="keyword" type="text" placeholder="Введите ключевое слово">
+  <button id="submit">Запустить загрузку</button>
+  <div id="status"></div>
+  <script>
+    const statusElement = document.getElementById('status');
+    const keywordInput = document.getElementById('keyword');
+    const submitButton = document.getElementById('submit');
+
+    // Замените адрес подключения на свой сервер
+    const connection = new WebSocket('ws://localhost:3000');
+
+    connection.onopen = () => {
+      statusElement.textContent = 'Соединение установлено';
+    };
+
+    function clearElement(element) {
+      while (element.firstChild) {
+        element.removeChild(element.firstChild);
+      }
+    }
+
+    connection.onmessage = async (message) => {
+      const data = JSON.parse(message.data);
+
+      if (data.error) {
+        statusElement.textContent = `Ошибка: ${data.error}`;
+        return;
+      }
+
+      if (data.urls) {
+        // Очистка статусного элемента
+        clearElement(statusElement);
+
+        // Создание кликабельных ссылок
+        data.urls.forEach((url) => {
+          const link = document.createElement('a');
+          link.href = url;
+          link.target = '_blank';
+          link.textContent = url;
+
+          statusElement.appendChild(link);
+          statusElement.appendChild(document.createElement('br'));
+        });
+      }
+
+      // Получение содержимого HTML и сохранение его
+      if (data.status === 'downloaded' && data.url && data.htmlContent) {
+        localStorage.setItem(`html_${data.url}`, data.htmlContent);
+      }
+    };
+
+    submitButton.onclick = () => {
+      const keyword = keywordInput.value;
+      if (keyword) {
+        connection.send(keyword);
+      }
+    };
+  </script>
+</body>
+</html>
